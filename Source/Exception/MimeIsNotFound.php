@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Hoa
  *
@@ -40,9 +42,6 @@ namespace Hoa\Mime\Exception;
  * Class \Hoa\Mime\MimeIsNotFound.
  *
  * Extending the \Hoa\Mime\Exception class.
- *
- * @copyright  Copyright © 2007-2017 Hoa community
- * @license    New BSD License
  */
 class MimeIsNotFound extends Exception
 {
