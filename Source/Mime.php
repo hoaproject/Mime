@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Hoa
  *
@@ -45,9 +47,6 @@ use Hoa\Zformat;
  *
  * Get informations relative to MIME (media, type, extension, other extensions)
  * about a stream.
- *
- * @copyright  Copyright © 2007-2017 Hoa community
- * @license    New BSD License
  */
 class Mime implements Zformat\Parameterizable
 {
@@ -89,46 +88,46 @@ class Mime implements Zformat\Parameterizable
     /**
      * Computed magic file.
      * Structure:
-     *     array(
-     *         structure_media_type => array(
-     *             media => array(
-     *                 type => array(extensions)
-     *             )
-     *         ),
-     *         structure_extension  => array(
+     *     [
+     *         structure_media_type => [
+     *             media => [
+     *                 type => [extensions]
+     *             ]
+     *         ],
+     *         structure_extension  => [
      *             extension => media/type
-     *         )
-     *     )
+     *         ]
+     *     ]
      *
      * @var array
      */
-    protected static $_computed = null;
+    protected static $_computed = [];
 
     /**
      * Extension.
      *
-     * @var string
+     * @var ?string
      */
     protected $_extension       = null;
 
     /**
      * MIME (media/type).
      *
-     * @var string
+     * @var ?string
      */
     protected $_mime            = null;
 
     /**
      * Media.
      *
-     * @var string
+     * @var ?string
      */
     protected $_media           = null;
 
     /**
      * Type.
      *
-     * @var string
+     * @var ?string
      */
     protected $_type            = null;
 
@@ -136,10 +135,6 @@ class Mime implements Zformat\Parameterizable
 
     /**
      * Get informations relative to MIME about a stream.
-     *
-     * @param   \Hoa\Stream  $stream        Stream to study.
-     * @param   array        $parameters    Parameters.
-     * @throws  \Hoa\Mime\Exception
      */
     public function __construct(Stream $stream, array $parameters = [])
     {
@@ -156,12 +151,12 @@ class Mime implements Zformat\Parameterizable
         if (null === $magic) {
             $this->_parameters->setParameter(
                 'magic',
-                'hoa://Library/Mime/Mime.types'
+                'hoa://Library/Mime/Source/Mime.types'
             );
             $magic = $this->_parameters->getParameter('magic');
         }
 
-        if (null === static::$_computed) {
+        if (empty(static::$_computed)) {
             static::compute($magic);
         }
 
@@ -172,25 +167,19 @@ class Mime implements Zformat\Parameterizable
 
     /**
      * Get parameters.
-     *
-     * @return  \Hoa\Zformat\Parameter
      */
-    public function getParameters()
+    public function getParameters(): Zformat\Parameter
     {
         return $this->_parameters;
     }
 
     /**
      * Compute a magic file.
-     *
-     * @param   string  $magic    Magic file to compute.
-     * @return  void
-     * @throws  \Hoa\Mime\Exception
      */
-    public static function compute($magic = null)
+    public static function compute(?string $magic = null)
     {
         if (null === $magic) {
-            $magic = 'hoa://Library/Mime/Mime.types';
+            $magic = 'hoa://Library/Mime/Source/Mime.types';
         }
 
         if (!file_exists($magic)) {
@@ -231,11 +220,7 @@ class Mime implements Zformat\Parameterizable
                 $m       = min($max, $i + 3);
                 $foo     = strlen((string) $m);
 
-                for (
-                    $e = max(0, $i - 3);
-                    $e <= $m;
-                    ++$e
-                ) {
+                for ($e = max(0, $i - 3); $e <= $m; ++$e) {
                     $message .= "\n" . sprintf('%' . $foo . 'd', $e) . '. ';
 
                     if ($i == $e) {
@@ -280,13 +265,10 @@ class Mime implements Zformat\Parameterizable
 
     /**
      * Check if extension exists in the magic file.
-     *
-     * @param   string  $extension    Extension to check.
-     * @return  bool
      */
-    public static function extensionExists($extension)
+    public static function extensionExists(string $extension): bool
     {
-        if (null === static::$_computed) {
+        if (empty(static::$_computed)) {
             static::compute();
         }
 
@@ -295,14 +277,10 @@ class Mime implements Zformat\Parameterizable
 
     /**
      * Get extensions from a MIME (media/type).
-     *
-     * @param   string  $mime    MIME.
-     * @return  array
-     * @throws  \Hoa\Mime\Exception\MimeIsNotFound
      */
-    public static function getExtensionsFromMime($mime)
+    public static function getExtensionsFromMime(string $mime): array
     {
-        if (null === static::$_computed) {
+        if (empty(static::$_computed)) {
             static::compute();
         }
 
@@ -321,11 +299,8 @@ class Mime implements Zformat\Parameterizable
 
     /**
      * Get MIME (media/type) from extension.
-     *
-     * @param   string  $extension    Extension to considere.
-     * @return  string
      */
-    public static function getMimeFromExtension($extension)
+    public static function getMimeFromExtension(string $extension): ?string
     {
         $extension = strtolower($extension);
 
@@ -339,12 +314,8 @@ class Mime implements Zformat\Parameterizable
     /**
      * Parse MIME, i.e. extract media and type. Please, see self::MIME_*
      * constants as result array index.
-     *
-     * @param   string  $mime    MIME to parse.
-     * @return  array
-     * @throws  \Hoa\Mime\Exception
      */
-    public static function parseMime($mime)
+    public static function parseMime(string $mime): array
     {
         if (false === strpos($mime, '/')) {
             throw new Exception(
@@ -359,10 +330,6 @@ class Mime implements Zformat\Parameterizable
 
     /**
      * Find informations about stream.
-     *
-     * @param   \Hoa\Stream  $stream    Stream to study.
-     * @return  void
-     * @throws  \Hoa\Mime\Exception\MimeIsNotFound
      */
     protected function _find(Stream $stream)
     {
@@ -400,20 +367,16 @@ class Mime implements Zformat\Parameterizable
 
     /**
      * Get extension.
-     *
-     * @return  string
      */
-    public function getExtension()
+    public function getExtension(): ?string
     {
         return $this->_extension;
     }
 
     /**
      * Get other extensions (associated to the same MIME).
-     *
-     * @return  array
      */
-    public function getOtherExtensions()
+    public function getOtherExtensions(): array
     {
         $out     = [];
         $current = $this->getExtension();
@@ -434,56 +397,46 @@ class Mime implements Zformat\Parameterizable
 
     /**
      * Get MIME (media/type).
-     *
-     * @return  string
      */
-    public function getMime()
+    public function getMime(): ?string
     {
         return $this->_mime;
     }
 
     /**
      * Get media.
-     *
-     * @return  string
      */
-    public function getMedia()
+    public function getMedia(): ?string
     {
         return $this->_media;
     }
 
     /**
      * Get type.
-     *
-     * @return  string
      */
-    public function getType()
+    public function getType(): ?string
     {
         return $this->_type;
     }
 
     /**
      * Check if the MIME is experimental or not.
-     *
-     * @return  bool
      */
-    public function isExperimental()
+    public function isExperimental(): bool
     {
-        return 'x-' === substr($this->getType(), 0, 2);
+        return 'x-' === substr($this->getType() ?? '', 0, 2);
     }
 
     /**
      * Check if the MIME is a vendor's one or not.
-     *
-     * @return  bool
      */
-    public function isVendor()
+    public function isVendor(): bool
     {
-        return 'vnd.' === substr($this->getType(), 0, 4);
+        return 'vnd.' === substr($this->getType() ?? '', 0, 4);
     }
 }
 
 /**
  * Flex entity.
  */
-Consistency::flexEntity('Hoa\Mime\Mime');
+Consistency::flexEntity(Mime::class);
